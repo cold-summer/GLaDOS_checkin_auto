@@ -26,9 +26,19 @@ if __name__ == '__main__':
             checkin = requests.post(url,headers={'cookie': cookie ,'referer': referer,'origin':origin,'user-agent':useragent,'content-type':'application/json;charset=UTF-8'},data=json.dumps(payload))
             state =  requests.get(url2,headers={'cookie': cookie ,'referer': referer,'origin':origin,'user-agent':useragent})
         #--------------------------------------------------------------------------------------------------------#  
-            time = state.json()['data']['leftDays']
-            time = time.split('.')[0]
-            email = state.json()['data']['email']
+            # 检查API响应中是否包含必要的数据
+            response_data = state.json()
+            if 'data' not in response_data or 'leftDays' not in response_data['data'] or 'email' not in response_data['data']:
+                print('API响应数据不完整，跳过此账号')
+                continue
+                
+            time = response_data['data']['leftDays']
+            # 确保time不为None且可以转换为字符串
+            if time is None:
+                print('leftDays数据为空，跳过此账号')
+                continue
+            time = str(time).split('.')[0]
+            email = response_data['data']['email']
             if 'message' in checkin.text:
                 mess = checkin.json()['message']
                 print(email+'----结果--'+mess+'----剩余('+time+')天')  # 日志输出
